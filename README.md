@@ -6,8 +6,9 @@ frida-bridge is a native JNI library that loads Frida Gadget into the
 host Android process with minimal configuration. It automatically resolves the
 real on‑disk paths — including inside containers that remap the filesystem —
 waits for the Android Runtime to become available, and places the gadget’s
-config and script files exactly where Frida expects them. No root, no APK
-patching, just a single `System.loadLibrary()` call.
+config and script files exactly where Frida expects them.
+No root, no target APK repacking.  
+Just two steps, you can make any container/virtual space Frida‑mode supported.
 
 ---
 
@@ -30,14 +31,13 @@ patching, just a single `System.loadLibrary()` call.
 
 > **How to use inside a container/VM:**  
 >- Implement the bridge library inside the container  
->  See [Implementation Instructions](https://github.com/muhammadrizwan87/frida-bridge#-implementation-instructions)
->- Clone the target app inside the container  
->- Place gadget files inside the app's private files directory (`<getFilesDir()>/frida`).  
->  For example, if the package is `com.example`, the path will typically be  
->  `/data/user/0/com.example/files/frida` (the `0` may be a different user ID  
->  depending on the Android profile).  
->  You can access this location via the container's rootfs.
->- Run the target app inside the container
+>  See [Implementation Instructions](https://github.com/muhammadrizwan87/frida-bridge#-implementation-instructions)  
+>- Clone the original target app inside the container  
+>- Create frida folder inside the target app's private files directory (`<getFilesDir()>/frida`).  
+>  Real path syntax: `/data/data/<container_pkg>/<rootfs>/data/user/<user_id>/<target_pkg>/files/frida`.  
+>  You can access this location via the container's rootfs.  
+>- Place gadget files in the frida folder.  
+>- Run the target app inside the container.
 
 ---
 
@@ -118,7 +118,11 @@ Enable by uncommenting the line in `jni/Android.mk`.
 
 ### 🔀 Implementation Instructions
 
-#### Option A: Patch an existing APK (Smali)
+**📌 Important Clarification:** This section patches a separate container APK, not the target app. The target app's integrity, and code remain 100% untouched. If you are integrating directly into your own container's source code, skip to Option B.
+
+#### Option A: Patch an existing container APK (Smali)
+
+Ensure that the native library is loaded within the class initializer of the container custom Application subclass
 
 ```smali
 .method static constructor <clinit>()V
@@ -133,9 +137,9 @@ Enable by uncommenting the line in `jni/Android.mk`.
 ```
 
 Add `lib/<abi>/libfrida-bridge.so` for each architecture, and place gadget
-files under `files/frida/` as described in section 3.
+files under `files/frida/` as described in section 2.
 
-#### Option B: Integrate into your own Android project
+#### Option B: Integrate into your own container project
 
 ```java
 public class MyApp extends Application {
