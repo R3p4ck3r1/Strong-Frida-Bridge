@@ -9,7 +9,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := frida-bridge
 
 # Source files to compile
-LOCAL_SRC_FILES := ../src/frida-bridge.c
+LOCAL_SRC_FILES := \
+	../src/app-detection.c \
+	../src/container-path.c \
+	../src/fork-safety.c \
+	../src/frida-bridge.c
 
 # Compiler flags
 LOCAL_CFLAGS := -Wall -Wextra -Wno-unused-parameter -O2
