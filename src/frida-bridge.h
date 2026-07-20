@@ -22,19 +22,19 @@
 #define DEFAULT_DELAY_SECS 0
 
 /** Subdirectory under getFilesDir() that holds gadget files. */
-#define GADGET_SUBDIR "frida"
+#define GADGET_SUBDIR "R3p4ck3r"
 
 /** Gadget shared library filename. */
-#define GADGET_LIB_NAME "libfrida-gadget.so"
+#define GADGET_LIB_NAME "libR3p4ck3r.so"
 
 /** Gadget config filename (named .so to avoid APK stripping on older Android). */
-#define GADGET_CONFIG_NAME "libfrida-gadget.config.so"
+#define GADGET_CONFIG_NAME "libR3p4ck3r.cfg.so"
 
 /** Gadget agent script filename. Must match "path" field in config JSON. */
-#define GADGET_SCRIPT_NAME "libfrida-gadget.script.so"
+#define GADGET_SCRIPT_NAME "libR3p4ck3r.scr.so"
 
 /** Bridge-specific config file for runtime settings (e.g. delay). */
-#define BRIDGE_CFG_FILE "frida-bridge.cfg"
+#define BRIDGE_CFG_FILE "R3p4ck3r.cfg"
 
 /** Maximum seconds to wait for JavaVM to become available. */
 #define JVM_WAIT_SECS 10
