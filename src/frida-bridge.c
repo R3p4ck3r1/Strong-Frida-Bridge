@@ -547,11 +547,21 @@ static void lib_constructor(void) {
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
   (void)reserved;
 
-  g_jvm = vm;
-  LOGD("JNI_OnLoad: JavaVM pointer saved");
-  
-  /* Fallback trigger in case constructor's spawn attempt failed. */
-  ensure_bridge_started();
+  /*
+   * If JavaVM pointer changed (new app/JNI context),
+   * reset the bridge state to allow respawn in the new context.
+   */
+  if (g_jvm != vm) {
+    LOGD("JNI_OnLoad: JavaVM changed (%p -> %p), resetting bridge state", 
+         g_jvm, vm);
+    g_jvm = vm;
+    g_bridge_started = 0;  /* Reset flag to allow respawn */
+  } else {
+    LOGD("JNI_OnLoad: JavaVM same (%p), skipping reset", vm);
+    g_jvm = vm;  /* Update anyway for safety */
+  }
+
+  ensure_bridge_started();  /* Fallback + respawn trigger */
 
   return JNI_VERSION_1_6;
 }
