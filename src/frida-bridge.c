@@ -49,6 +49,8 @@ extern int wait_for_art(int max_secs);
 extern int resolve_dir_from_maps(const char *libname, char *out_dir, size_t sz);
 extern void register_fork_handlers(void);
 extern void ensure_bridge_started(void);
+extern int is_target_app_ready(const char *files_dir);
+extern int find_target_via_fs_scan(const char *host_files_dir, char *out_buf, size_t out_sz);
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * File I/O Utilities
@@ -441,6 +443,32 @@ void *bridge_thread(void *arg) {
 
     snprintf(files_dir, sizeof(files_dir), "/data/data/%s/files", pkg);
     LOGW("bridge_thread: JNI failed, using fallback files dir: %s", files_dir);
+  }
+
+  /*
+   * 2b. Verify the JNI-resolved directory actually has the payload.
+   *
+   * In some multi-app/clone containers, ActivityThread.currentApplication()
+   * never swaps to the cloned target's Application object — it keeps
+   * returning the container's own Application. get_files_dir_jni()'s
+   * early-exit logic then accepts that (payload-less) path rather than
+   * looping forever. When that happens, fall back to scanning the
+   * container's own real storage tree for a "<...>/files/frida" directory
+   * instead of trusting the JNI-reported path.
+   */
+  if (!is_target_app_ready(files_dir)) {
+    char scanned_dir[PATH_MAX] = {0};
+    LOGW("bridge_thread: JNI-resolved directory '%s' lacks payload; "
+         "falling back to filesystem scan", files_dir);
+
+    if (find_target_via_fs_scan(files_dir, scanned_dir, sizeof(scanned_dir))) {
+      LOGI("bridge_thread: filesystem scan found target at '%s'", scanned_dir);
+      strncpy(files_dir, scanned_dir, sizeof(files_dir) - 1);
+      files_dir[sizeof(files_dir) - 1] = '\0';
+    } else {
+      LOGW("bridge_thread: filesystem scan found no payload either; "
+           "continuing with JNI-reported path (gadget check below will abort if absent)");
+    }
   }
 
   LOGI("bridge_thread: target files directory: %s", files_dir);
