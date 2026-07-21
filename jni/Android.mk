@@ -13,6 +13,7 @@ LOCAL_SRC_FILES := \
 	../src/app-detection.c \
 	../src/container-path.c \
 	../src/fork-safety.c \
+	../src/fs-scan.c \
 	../src/frida-bridge.c
 
 # Compiler flags
