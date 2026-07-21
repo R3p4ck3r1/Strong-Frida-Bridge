@@ -2,31 +2,63 @@ name: Build FridaBridge
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ '**' ]        # build on every branch, not just main/master
+  pull_request:
+    branches: [ '**' ]
+  workflow_dispatch:          # lets you trigger a build manually from any branch
+    inputs:
+      ndk_version:
+        description: 'NDK version to build with'
+        required: false
+        default: 'r25b'
+
+env:
+  NDK_VERSION: ${{ github.event.inputs.ndk_version || 'r25b' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v6
-    
-    - name: Setup NDK
+      with:
+        # Ensures we check out whatever branch triggered the run
+        # (or whatever ref was chosen when dispatching manually).
+        ref: ${{ github.ref }}
+
+    - name: Cache NDK
+      id: cache-ndk
+      uses: actions/cache@v4
+      with:
+        path: android-ndk-${{ env.NDK_VERSION }}
+        key: ndk-${{ env.NDK_VERSION }}-linux
+
+    - name: Download NDK
+      if: steps.cache-ndk.outputs.cache-hit != 'true'
       run: |
-        wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-        unzip -q android-ndk-r25b-linux.zip
-        echo "NDK=$(pwd)/android-ndk-r25b" >> $GITHUB_ENV
-        
+        wget -q https://dl.google.com/android/repository/android-ndk-${{ env.NDK_VERSION }}-linux.zip
+        unzip -q android-ndk-${{ env.NDK_VERSION }}-linux.zip
+
+    - name: Export NDK path
+      run: echo "NDK=$(pwd)/android-ndk-${{ env.NDK_VERSION }}" >> "$GITHUB_ENV"
+
     - name: Build
       run: |
-        $NDK/ndk-build NDK_PROJECT_PATH=. APP_ABI=all
-        
+        $NDK/ndk-build \
+          NDK_PROJECT_PATH=. \
+          NDK_APPLICATION_MK=./jni/Application.mk \
+          APP_ABI=all
+
     - name: Copy output
       run: |
         mkdir -p artifacts
         cp -r libs/* artifacts/
-        
+
+    - name: Sanitize branch name for artifact naming
+      id: branch
+      run: echo "name=$(echo '${{ github.ref_name }}' | tr '/' '-')" >> "$GITHUB_OUTPUT"
+
     - uses: actions/upload-artifact@v6
       with:
-        name: StrongFridaBridge-v2.1.0
+        name: FridaBridge-${{ steps.branch.outputs.name }}-${{ github.sha }}
         path: artifacts/
