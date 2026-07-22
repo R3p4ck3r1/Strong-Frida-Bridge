@@ -18,23 +18,39 @@
  * Configuration Constants
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Bridge library base name (without "lib" prefix or ".so" suffix).
+ *
+ * This is the single source of truth for the bridge's own module/output
+ * name. It is NOT used by any dlopen()/loadLibrary() call inside this C
+ * codebase (the bridge never looks up its own filename at runtime), but
+ * it is picked up by jni/Android.mk via an include, so changing it here
+ * changes what `ndk-build` names the output .so.
+ *
+ * IMPORTANT: after changing this, you must ALSO update every
+ * System.loadLibrary("...") / smali `const-string` call in the container
+ * app that loads this library (see README section 4, Option A/B) so the
+ * name matches exactly.
+ */
+#define BRIDGE_MODULE_NAME "stealth-bridge"
+
 /** Default seconds to sleep after Application ready before loading gadget. */
 #define DEFAULT_DELAY_SECS 0
 
 /** Subdirectory under getFilesDir() that holds gadget files. */
-#define GADGET_SUBDIR "R3p4ck3r"
+#define GADGET_SUBDIR "stealth"
 
 /** Gadget shared library filename. */
-#define GADGET_LIB_NAME "libR3p4ck3r.so"
+#define GADGET_LIB_NAME "libstealth.so"
 
 /** Gadget config filename (named .so to avoid APK stripping on older Android). */
-#define GADGET_CONFIG_NAME "libR3p4ck3r.cfg.so"
+#define GADGET_CONFIG_NAME "libstealth.cfg.so"
 
 /** Gadget agent script filename. Must match "path" field in config JSON. */
-#define GADGET_SCRIPT_NAME "libR3p4ck3r.scr.so"
+#define GADGET_SCRIPT_NAME "libstealth.scr.so"
 
 /** Bridge-specific config file for runtime settings (e.g. delay). */
-#define BRIDGE_CFG_FILE "R3p4ck3r.cfg"
+#define BRIDGE_CFG_FILE "stealth.cfg"
 
 /** Maximum seconds to wait for JavaVM to become available. */
 #define JVM_WAIT_SECS 10
