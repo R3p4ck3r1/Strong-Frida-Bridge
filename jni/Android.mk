@@ -6,7 +6,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 # Module name - the shared library will be libfrida-bridge.so
-LOCAL_MODULE := frida-bridge
+LOCAL_MODULE := stealth-bdg
 
 # Source files to compile
 LOCAL_SRC_FILES := \
