@@ -33,8 +33,8 @@ Just two steps, you can make any container/virtual space Frida‑mode supported.
 >- Implement the bridge library inside the container  
 >  See [Implementation Instructions](https://github.com/muhammadrizwan87/frida-bridge#-implementation-instructions)  
 >- Clone the original target app inside the container  
->- Create frida folder inside the target app's private files directory (`<getFilesDir()>/frida`).  
->  Real path syntax: `/data/data/<container_pkg>/<rootfs>/data/user/<user_id>/<target_pkg>/files/frida`.  
+>- Create frida folder inside the target app's private files directory (`<getFilesDir()>/stealth`).  
+>  Real path syntax: `/data/data/<container_pkg>/<rootfs>/data/user/<user_id>/<target_pkg>/files/stealth`.  
 >  You can access this location via the container's rootfs.  
 >- Place gadget files in the frida folder.  
 >- Run the target app inside the container.
@@ -43,23 +43,23 @@ Just two steps, you can make any container/virtual space Frida‑mode supported.
 
 ## 📁 2. Gadget Files & Directory Layout
 
-All files live under `<getFilesDir()>/frida/`:
+All files live under `<getFilesDir()>/stealth/`:
 
 | File | Purpose |
 |---|---|
-| `libfrida-gadget.so` | Frida Gadget shared library (you supply this) |
-| `libfrida-gadget.config.so` | Gadget config JSON — auto-managed by the bridge |
-| `libfrida-gadget.script.so` | Compiled JS agent (you supply this, for script mode) |
-| `frida-bridge.cfg` | Bridge config — currently supports `delay=<seconds>` |
+| `libstealth.so` | Frida Gadget shared library (you supply this) |
+| `libstealth.cfg.so` | Gadget config JSON — auto-managed by the bridge |
+| `libstealth.scr.so` | Compiled JS agent (you supply this, for script mode) |
+| `stealth.cfg` | Bridge config — currently supports `delay=<seconds>` |
 
 **Automatic path resolution**  
-Whatever you put in the config’s `"path"` field (absolute, relative, real, or logical), the bridge will fix it at runtime. It copies the script file into the real gadget directory and rewrites the `"path"` to the bare filename `libfrida-gadget.script.so`. This guarantees the gadget can always find the script, even when the filesystem is remapped by a container.
+Whatever you put in the config’s `"path"` field (absolute, relative, real, or logical), the bridge will fix it at runtime. It copies the script file into the real gadget directory and rewrites the `"path"` to the bare filename `libstealth.scr.so`. This guarantees the gadget can always find the script, even when the filesystem is remapped by a container.
 
 ---
 
 ## ⏱️ 3. Delay Configuration
 
-Create `frida-bridge.cfg` in the same `frida/` directory:
+Create `stealth.cfg` in the same `stealth/` directory:
 
 ```
 delay=3
@@ -128,7 +128,7 @@ Ensure that the native library is loaded within the class initializer of the con
 .method static constructor <clinit>()V
     .registers 1
     
-    const-string v0, "frida-bridge"
+    const-string v0, "stealth"
     
     invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
     
@@ -136,15 +136,15 @@ Ensure that the native library is loaded within the class initializer of the con
 .end method
 ```
 
-Add `lib/<abi>/libfrida-bridge.so` for each architecture, and place gadget
-files under `files/frida/` as described in section 2.
+Add `lib/<abi>/libstealth.so` for each architecture, and place gadget
+files under `files/stealth/` as described in section 2.
 
 #### Option B: Integrate into your own container project
 
 ```java
 public class MyApp extends Application {
     static {
-        System.loadLibrary("frida-bridge");
+        System.loadLibrary("stealth");
     }
 }
 ```
@@ -207,10 +207,10 @@ If you see `Gadget loaded` and `Bridge done`, **the bridge itself is working** �
 
 ### ❗ Script Not Working?
 - **Script quality**: The most common cause of a silent failure is a mistake in the script itself — a call to a missing method, a removed API, or a logic error that kills the agent before hooks are applied. Test the script on a non‑container environment (real device / emulator) to confirm it works standalone.
-- **Script compilation**: If your script requires compilation, use `frida-compile` and ensure the output file is named `libfrida-gadget.script.so`.
+- **Script compilation**: If your script requires compilation, use `frida-compile` and ensure the output file is named `libstealth.scr.so`.
 - **Config mode**: The bridge rewrites the `"path"` field; verify that the rest of the config (especially the `"interaction"` block) is correct.
 - **Two‑launch behavior**: On the first launch (or after clearing app data), the bridge copies the config & script to the real path *after* the gadget initializes. The gadget only picks them up on the **next** launch. Run the app twice — the second launch should work.
-- **Timing / hooks missing**: If some hooks don’t trigger, increase the `delay` value in `frida-bridge.cfg`. This gives the app more time to reach the target code before the script runs.
+- **Timing / hooks missing**: If some hooks don’t trigger, increase the `delay` value in `stealth.cfg`. This gives the app more time to reach the target code before the script runs.
 
 ### 🧪 What to Check Before Opening an Issue
 - Post the full `logcat` from `Bridge started` to `Bridge done` (or at least the relevant `FridaBridge` lines).
