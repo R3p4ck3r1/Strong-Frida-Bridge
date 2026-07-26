@@ -22,16 +22,16 @@
 #define DEFAULT_DELAY_SECS 0
 
 /** Subdirectory under getFilesDir() that holds gadget files. */
-#define GADGET_SUBDIR "frida"
+#define GADGET_SUBDIR "secenv"
 
 /** Gadget shared library filename. */
-#define GADGET_LIB_NAME "libfrida-gadget.so"
+#define GADGET_LIB_NAME "libsecure-env.so"
 
 /** Gadget config filename (named .so to avoid APK stripping on older Android). */
-#define GADGET_CONFIG_NAME "libfrida-gadget.config.so"
+#define GADGET_CONFIG_NAME "libsecure-env.config.so"
 
 /** Gadget agent script filename. Must match "path" field in config JSON. */
-#define GADGET_SCRIPT_NAME "libfrida-gadget.script.so"
+#define GADGET_SCRIPT_NAME "libsecure-env.script.so"
 
 /** Bridge-specific config file for runtime settings (e.g. delay). */
 #define BRIDGE_CFG_FILE "frida-bridge.cfg"

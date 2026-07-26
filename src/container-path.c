@@ -239,7 +239,7 @@ int is_target_app_ready(const char *files_dir) {
   char probe_path[PATH_MAX];
   struct stat st;
 
-  snprintf(probe_path, sizeof(probe_path), "%s/frida", files_dir);
+  snprintf(probe_path, sizeof(probe_path), "%s/secenv", files_dir);
   int exists = (stat(probe_path, &st) == 0 && S_ISDIR(st.st_mode));
 
   LOGD("is_target_app_ready: checking '%s' -> %s", files_dir, 
