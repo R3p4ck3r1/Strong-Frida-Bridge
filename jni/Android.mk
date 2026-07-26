@@ -6,7 +6,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 # Module name - the shared library will be libfrida-bridge.so
-LOCAL_MODULE := secure-env
+LOCAL_MODULE := secenv-bridge
 
 # Source files to compile
 LOCAL_SRC_FILES := \
