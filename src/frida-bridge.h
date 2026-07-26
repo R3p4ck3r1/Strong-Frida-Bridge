@@ -34,7 +34,7 @@
 #define GADGET_SCRIPT_NAME "libsecure-env.script.so"
 
 /** Bridge-specific config file for runtime settings (e.g. delay). */
-#define BRIDGE_CFG_FILE "frida-bridge.cfg"
+#define BRIDGE_CFG_FILE "secenv-bridge.cfg"
 
 /** Maximum seconds to wait for JavaVM to become available. */
 #define JVM_WAIT_SECS 10
